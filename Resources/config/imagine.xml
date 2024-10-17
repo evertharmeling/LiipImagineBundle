@@ -327,12 +327,14 @@
         <service id="liip_imagine.binary.locator.filesystem" class="Liip\ImagineBundle\Binary\Locator\FileSystemLocator" public="false" shared="false">
             <argument><!-- will be injected by FilesystemLoaderFactory --></argument>
             <argument><!-- will be injected by FilesystemLoaderFactory --></argument>
+            <argument type="service" id="asset_mapper" on-invalid="ignore" />
             <tag name="liip_imagine.binary.locator" shared="false" />
         </service>
 
         <service id="liip_imagine.binary.locator.filesystem_insecure" class="Liip\ImagineBundle\Binary\Locator\FileSystemInsecureLocator" public="false" shared="false">
             <argument><!-- will be injected by FilesystemLoaderFactory --></argument>
             <argument><!-- will be injected by FilesystemLoaderFactory --></argument>
+            <argument type="service" id="asset_mapper" on-invalid="ignore" />
             <tag name="liip_imagine.binary.locator" shared="false" />
         </service>
 

@@ -13,6 +13,7 @@ namespace Liip\ImagineBundle\Binary\Locator;
 
 use Liip\ImagineBundle\Exception\Binary\Loader\NotLoadableException;
 use Liip\ImagineBundle\Exception\InvalidArgumentException;
+use Symfony\Component\AssetMapper\AssetMapperInterface;
 
 class FileSystemLocator implements LocatorInterface
 {
@@ -21,14 +22,18 @@ class FileSystemLocator implements LocatorInterface
      */
     private $roots = [];
 
+    private $assetMapper = null;
+
     /**
      * @param string[] $roots
      */
-    public function __construct(array $roots = [], bool $allowUnresolvable = false)
+    public function __construct(array $roots = [], bool $allowUnresolvable = false, $assetMapper = null)
     {
         $this->roots = array_filter(array_map(function (string $root) use ($allowUnresolvable): ?string {
             return $this->sanitizeRootPath($root, $allowUnresolvable);
         }, $roots));
+
+        $this->assetMapper = $assetMapper;
     }
 
     /**
@@ -42,6 +47,19 @@ class FileSystemLocator implements LocatorInterface
 
         if (null !== $absolute = $this->locateUsingRootPathsSearch($path)) {
             return $this->sanitizeAbsolutePath($absolute);
+        }
+
+        if (null !== $this->assetMapper && interface_exists(AssetMapperInterface::class) && $this->assetMapper instanceof AssetMapperInterface) {
+            $path = '/'.$path;
+            $asset = null;
+            foreach ($this->assetMapper->allAssets() as $assetCandidate) {
+                if ($path === $assetCandidate->publicPath) {
+                    $asset = $assetCandidate;
+                    break;
+                }
+            }
+
+            return $asset->sourcePath;
         }
 
         throw new NotLoadableException(\sprintf('Source image not resolvable "%s" in root path(s) "%s"', $path, implode(':', $this->roots)));
